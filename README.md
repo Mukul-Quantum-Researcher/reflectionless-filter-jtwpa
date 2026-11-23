@@ -1,54 +1,34 @@
-# SNAIL JTWPA parameter design
+# JTWPA gain with and without reflectionless filtering
 
-A design study for a DC-flux-biased, three-wave-mixing SNAIL travelling-wave parametric amplifier. The Python notebook is the entry point. The Julia nonlinear circuit simulation is still under development.
+I simulated how external termination impedance changes the gain of a Josephson travelling-wave parametric amplifier. The three cases use the same amplifier: ideal 50-ohm loads, nonideal circulators, and a reflectionless-filter/circulator cascade.
 
-## Status
+The JTWPA circuit and parameters follow the official JosephsonCircuits example based on Macklin et al. The comparison is motivated by [Kedziora et al., Reflection-less filter for superconducting quantum circuits](https://arxiv.org/abs/2506.20645). The circulator and filter S-parameters are explicitly defined surrogate models; they are not measured Touchstone data from that paper.
 
-The Python workflow evaluates stable SNAIL minima, Taylor coefficients, junction parameters, RF line impedance, exact discrete Bloch dispersion, cold phase mismatch and loop-inductance sensitivity. Its validation record is in [VALIDATION.md](VALIDATION.md).
+## Implementation
 
-The supplied Julia run stopped with `ArgumentError: No matching component found in allowedcomponents.` The notebook retains that limitation in a prominent status note, even though old outputs have been cleared. Pumped gain, phase matching, noise performance and layout readiness have **not** been validated. Earlier trial gain curves and failed solver experiments are not included as performance evidence.
+- A 2,048-cell JTWPA with a 7.12 GHz, 1.85 microamp pump.
+- Tuple-based circuit construction and harmonic-balance/small-signal analysis in JosephsonCircuits.jl.
+- Frequency-dependent complex termination impedances derived from network reflection coefficients.
+- A comparison of gain and the reflection presented to the amplifier.
 
 ## Files
 
-- [Python parameter notebook](notebooks/SNAIL_JTWPA_parameter_design.ipynb)
-- [Provisional JSON handoff](notebooks/snail_jtwpa_design_parameters.json)
-- [Julia nonlinear workflow, incomplete](notebooks/SNAIL_JTWPA_JosephsonCircuits_simulation.ipynb)
-- `figures/`: plots from the executed Python workflow
+- `notebooks/kedziora_jtwpa_fig1_josephsoncircuits.ipynb`: reviewed copy of the supplied notebook, preserving recorded plots and solver warnings. Large printed solver objects were removed for readability.
+- `src/model.jl`: the same circuit and surrogate termination definitions, extracted into an executable model.
+- `scripts/verify_terminations.py`: sampled checks of the surrogate-network impedances and filter scattering matrix.
+- `figures/`: recorded output from the supplied notebook.
+- `results/`: numerical exports and validation records.
 
-## Baseline candidate
+## Reading the result
 
-| Parameter | Model value |
-| --- | --- |
-| Large junctions per SNAIL | 3 |
-| Small/large critical-current ratio | 0.29 |
-| Flux bias | approximately 0.4089 Φ₀ |
-| Cell inductance | 145 pH |
-| RF shunt capacitance | 58 fF |
-| Nominal line impedance | 50 Ω |
-| Pump frequency | 12 GHz |
-| Signal band under study | 4–8 GHz |
+The recorded comparison illustrates the effect being studied: the filtered curve is closer to the ideal-load baseline than the circulator-only curve. However, the supplied circulator-only run reports non-convergence, so that original gain trace is provisional. No fresh Julia harmonic-balance run is claimed. The separate checks cover the surrogate networks only.
 
-These are starting values. Junction capacitance, loop inductance, bias coupling and process assumptions must be checked against actual fabrication and EM extraction. A near-zero bare quartic coefficient does not establish a Kerr-free pumped device. Cold phase mismatch is not the final nonlinear phase-matching criterion.
+These are model comparisons, not measured amplifier performance or an exact numerical reproduction of the paper. Filter noise/quantum efficiency and gain measured after external insertion loss are not established here. Frequency-dependent port impedances also require care when comparing the normalisation of S-parameters across cases.
 
-The revised baseline does not include a resonant phase-matching network by default. It differs from earlier periodically loaded trials; do not combine their results.
+## Run
 
-## Run the Python workflow
+Use Julia 1.12 with the declared project dependencies and an IJulia environment to run the notebook. The supplied sweep has 1,301 signal frequencies (0.01 GHz spacing). Check convergence before using any quantitative gain result.
 
-```shell
-python -m pip install -r requirements.txt
-jupyter lab
-```
+For the lightweight external-model check, run `python scripts/verify_terminations.py` with NumPy installed. This does not validate harmonic-balance gain or physical causality of the surrogate networks.
 
-Open the Python notebook and run all cells. Its JSON handoff is written beside the notebook. See `VALIDATION.md` for the tested versions.
-
-For the unfinished Julia workflow, activate this directory with `julia --project=.` and run `using Pkg; Pkg.instantiate()` before using an IJulia notebook environment. `Project.toml` declares direct dependencies; no `Manifest.toml` or verified solver-version lock is supplied. This does not resolve the component error.
-
-## Validation still needed
-
-1. Confirm a single SNAIL’s DC operating point and small-signal inductance.
-2. Match unpumped 5–20-cell dispersion to the Python model.
-3. Establish converged signal–idler conversion at `fi = fp - fs`.
-4. Check nonlinear phase mismatch, pump depletion and phase excursions.
-5. Scale cell count only after those checks pass.
-
-[Project explanation](https://mukul-quantum-researcher.github.io/projects/snail-jtwpa/) · [Portfolio](https://mukul-quantum-researcher.github.io)
+[Project page](https://mukul-quantum-researcher.github.io/projects/reflectionless-filter/) · [JosephsonCircuits documentation](https://josephsoncircuits.org/stable/)

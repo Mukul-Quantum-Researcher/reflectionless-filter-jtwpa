@@ -1,0 +1,10 @@
+{
+  "sample_points": 400,
+  "frequency_GHz": [
+    1,
+    14
+  ],
+  "minimum_real_impedance_ohm": 2.9374433000186517,
+  "maximum_filter_singular_value": 0.9405764190710844,
+  "scope": "Sampled surrogate-network check only; no fresh Julia harmonic-balance run."
+}
