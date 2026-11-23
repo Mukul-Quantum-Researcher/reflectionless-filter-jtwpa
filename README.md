@@ -52,4 +52,3 @@ For the unfinished Julia workflow, activate this directory with `julia --project
 5. Scale cell count only after those checks pass.
 
 [Project explanation](https://mukul-quantum-researcher.github.io/projects/snail-jtwpa/) · [Portfolio](https://mukul-quantum-researcher.github.io)
-
